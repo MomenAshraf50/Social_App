@@ -16,7 +16,11 @@ class EditProfileScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     HomeCubit homeCubit = HomeCubit.get(context);
     return BlocConsumer<HomeCubit,HomeStates>(
-      listener: (context,state){},
+      listener: (context,state){
+        if(state is UserUpdateSuccessState){
+          Navigator.pop(context);
+        }
+      },
       builder: (context,state) {
         File? profileImage = homeCubit.profileImage;
         File? coverImage = homeCubit.coverImage;
@@ -32,9 +36,9 @@ class EditProfileScreen extends StatelessWidget {
             title: const Text('Edit Profile'),
             titleSpacing: 5,
             actions: [
-              TextButton(onPressed: (){
+              defaultTextButton(onPressed: (){
                 homeCubit.updateUserData(name: nameController.text, bio: bioController.text, phone: phoneController.text);
-              }, child: const Text('Update')),
+              }, text: 'Update'),
               const SizedBox(width: 15,)
             ],
           ),

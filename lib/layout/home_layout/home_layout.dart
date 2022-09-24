@@ -44,11 +44,11 @@ class HomeLayout extends StatelessWidget
                         const Icon(Icons.warning_amber),
                         const SizedBox(width: 10,),
                         const Expanded(child: Text('Please verify your email')),
-                        TextButton(onPressed: (){
+                        defaultTextButton(onPressed: (){
                           FirebaseAuth.instance.currentUser!.sendEmailVerification().then((value){
                             showToast('check your mail for verification', ToastStates.SUCCESS);
                           }).catchError((error){});
-                        }, child: const Text("Send verification"))
+                        }, text: 'Send Verification')
 
                       ],
                     ),

@@ -118,10 +118,9 @@ class LoginScreen extends StatelessWidget {
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               const Text('Don\'t have an account?'),
-                              TextButton(
-                                  onPressed: () {
-                                    navigateTo(context, RegisterScreen());
-                                  }, child: const Text('Register Now'))
+                              defaultTextButton(onPressed: (){
+                                navigateTo(context, RegisterScreen());
+                              }, text: 'Register Now')
                             ],
                           )
                         ],

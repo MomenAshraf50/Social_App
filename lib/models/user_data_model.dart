@@ -16,7 +16,7 @@ class UserDataModel{
     uid = json?['uid'];
     image = json?['image'];
     bio = json?['bio'];
-    coverImage = json?['cover'];
+    coverImage = json?['coverImage'];
   }
 
   Map<String,dynamic> toMap(){

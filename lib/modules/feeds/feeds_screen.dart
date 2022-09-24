@@ -1,65 +1,81 @@
+import 'package:conditional_builder_null_safety/conditional_builder_null_safety.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:social_app/layout/home_layout/home_cubit/home_cubit.dart';
+import 'package:social_app/layout/home_layout/home_cubit/home_states.dart';
+import 'package:social_app/models/post_model.dart';
 import 'package:social_app/shared/styles/colors.dart';
 import 'package:social_app/shared/styles/icon_broken.dart';
 
 class FeedsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Expanded(
-      child: SingleChildScrollView(
-        physics: const BouncingScrollPhysics(),
-        scrollDirection: Axis.vertical,
-        child: Column(
-          children: [
-            Card(
-              clipBehavior: Clip.antiAliasWithSaveLayer,
-              elevation: 10,
-              margin: const EdgeInsets.all(8),
-              child: Stack(alignment: AlignmentDirectional.bottomEnd, children: [
-                const Image(
-                  image: NetworkImage(
-                      'https://img.freepik.com/free-photo/aesthetic-dark-wallpaper-background-neon-light_53876-128291.jpg?w=740&t=st=1663432158~exp=1663432758~hmac=ae12f6a4d8a81f1590da0374ad5f8c214e1e143c4c40885954f2b92d4ce2b74b'),
-                  fit: BoxFit.cover,
-                  height: 200,
-                  width: double.infinity,
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Text('Communicate with friends',
-                      style: Theme.of(context)
-                          .textTheme
-                          .bodyText1!
-                          .copyWith(color: Colors.white)),
-                )
-              ]),
+    return BlocConsumer<HomeCubit,HomeStates>(
+      listener: (context,state){},
+      builder: (context,state){
+        HomeCubit homeCubit = HomeCubit.get(context);
+        return ConditionalBuilder(
+          condition: homeCubit.posts.isNotEmpty&&homeCubit.userDataModel != null,
+          builder: (context) => Expanded(
+            child: SingleChildScrollView(
+              physics: const BouncingScrollPhysics(),
+              scrollDirection: Axis.vertical,
+              child: Column(
+                children: [
+                  Card(
+                    clipBehavior: Clip.antiAliasWithSaveLayer,
+                    elevation: 10,
+                    margin: const EdgeInsets.all(8),
+                    child: Stack(alignment: AlignmentDirectional.bottomEnd, children: [
+                      const Image(
+                        image: NetworkImage(
+                            'https://img.freepik.com/free-photo/aesthetic-dark-wallpaper-background-neon-light_53876-128291.jpg?w=740&t=st=1663432158~exp=1663432758~hmac=ae12f6a4d8a81f1590da0374ad5f8c214e1e143c4c40885954f2b92d4ce2b74b'),
+                        fit: BoxFit.cover,
+                        height: 200,
+                        width: double.infinity,
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Text('Communicate with friends',
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodyText1!
+                                .copyWith(color: Colors.white)),
+                      )
+                    ]),
+                  ),
+                  ListView.separated(
+                    physics: const NeverScrollableScrollPhysics(),
+                    shrinkWrap: true,
+                    itemBuilder:(context,index) => buildPostItem(context,homeCubit.posts[index],index),
+                    separatorBuilder:(context,index)=>const SizedBox(height: 10,),
+                    itemCount: homeCubit.posts.length,
+                  ),
+                  const SizedBox(height: 100,)
+                ],
+              ),
             ),
-            ListView.separated(
-              physics: const NeverScrollableScrollPhysics(),
-              shrinkWrap: true,
-              itemBuilder:(context,index) => buildPostItem(context),
-              separatorBuilder:(context,index)=>const SizedBox(height: 10,),
-              itemCount: 10,
-            )
-          ],
-        ),
-      ),
+          ),
+          fallback: (context) => const Center(child: CircularProgressIndicator()),
+        );
+      },
     );
   }
 
-  Widget buildPostItem(BuildContext context) => Card(
+  Widget buildPostItem(BuildContext context,PostModel model,int index) => Card(
     clipBehavior: Clip.antiAliasWithSaveLayer,
     elevation: 10,
     margin: const EdgeInsets.symmetric(horizontal: 8),
     child: Padding(
       padding: const EdgeInsets.all(10.0),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              const CircleAvatar(
+              CircleAvatar(
                 radius: 25,
-                backgroundImage: NetworkImage(
-                    'https://img.freepik.com/free-photo/young-pretty-woman-portrait-outdoors_624325-2177.jpg?w=740&t=st=1663433131~exp=1663433731~hmac=2d5eb53981e093eb72d68185bdc8ab348e54e324e8253051bbb583ddb2df1b1f'),
+                backgroundImage: NetworkImage('${model.image}')
               ),
               const SizedBox(
                 width: 15,
@@ -70,22 +86,17 @@ class FeedsScreen extends StatelessWidget {
                     children: [
                       Row(
                         children: [
-                          const Text(
-                            'Mo\'men Ashraf',
-                            style:  TextStyle(height: 1.4),
+                          Text(
+                            '${model.name}',
+                            style:  const TextStyle(height: 1.4),
                           ),
                           const SizedBox(
                             width: 5,
                           ),
-                          Icon(
-                            Icons.check_circle,
-                            color: defaultColor,
-                            size: 16,
-                          )
                         ],
                       ),
                       Text(
-                        'January 21,2022 at 13:00',
+                        '${model.dateTime}',
                         style: Theme.of(context)
                             .textTheme
                             .caption!
@@ -109,11 +120,11 @@ class FeedsScreen extends StatelessWidget {
               color: Colors.grey,
             ),
           ),
-          const Text(
-            'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
-            style: TextStyle(height: 1.2),
+          Text(
+            '${model.postText}',
+            style: const TextStyle(height: 1.2),
           ),
-          Padding(
+          /*Padding(
             padding: const EdgeInsets.only(top: 5.0,bottom: 10),
             child: SizedBox(
               width: double.infinity,
@@ -152,16 +163,19 @@ class FeedsScreen extends StatelessWidget {
                 ],
               ),
             ),
-          ),
-          Container(
-            width: double.infinity,
-            height: 200,
-            decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(4),
-                image: const DecorationImage(
-                    image: NetworkImage(
-                        'https://img.freepik.com/free-photo/young-pretty-woman-portrait-outdoors_624325-2177.jpg?w=740&t=st=1663433131~exp=1663433731~hmac=2d5eb53981e093eb72d68185bdc8ab348e54e324e8253051bbb583ddb2df1b1f'),
-                    fit: BoxFit.cover)),
+          ),*/
+          if(model.postImage != null)
+          Padding(
+            padding: const EdgeInsetsDirectional.only(top: 15),
+            child: Container(
+              width: double.infinity,
+              height: 200,
+              decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(4),
+                  image:  DecorationImage(
+                      image: NetworkImage('${model.postImage}'),
+                      fit: BoxFit.cover)),
+            ),
           ),
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 8.0),
@@ -174,7 +188,7 @@ class FeedsScreen extends StatelessWidget {
                       children: [
                         Icon(IconBroken.Heart,color: defaultColor,size: 20,),
                         const SizedBox(width: 5,),
-                        const Text('1200'),
+                        Text('${HomeCubit.get(context).likes[index]}'),
                       ],
                     ),
                   ),
@@ -210,10 +224,9 @@ class FeedsScreen extends StatelessWidget {
                 child: InkWell(
                   child: Row(
                     children: [
-                      const CircleAvatar(
+                       CircleAvatar(
                         radius: 18,
-                        backgroundImage: NetworkImage(
-                            'https://img.freepik.com/free-photo/young-pretty-woman-portrait-outdoors_624325-2177.jpg?w=740&t=st=1663433131~exp=1663433731~hmac=2d5eb53981e093eb72d68185bdc8ab348e54e324e8253051bbb583ddb2df1b1f'),
+                        backgroundImage: NetworkImage('${model.image}')
                       ),
                       const SizedBox(
                         width: 15,
@@ -241,7 +254,9 @@ class FeedsScreen extends StatelessWidget {
                     ],
                   ),
                 ),
-                onTap: (){},
+                onTap: (){
+                  HomeCubit.get(context).likePost(HomeCubit.get(context).postsId[index]);
+                },
               ),
             ],
           )

@@ -90,3 +90,8 @@ Color toastColor(ToastStates state){
   }
   return color;
 }
+
+Widget defaultTextButton({
+  required VoidCallback onPressed,
+  required String text,
+}) => TextButton(onPressed: onPressed, child: Text(text));
