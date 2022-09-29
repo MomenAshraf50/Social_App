@@ -9,6 +9,19 @@ class HomeGetUserErrorState extends HomeStates{
   HomeGetUserErrorState(this.error);
 }
 
+class HomeGetAllUserSuccessState extends HomeStates{}
+class HomeGetAllUserLoadingState extends HomeStates{}
+class HomeGetAllUserErrorState extends HomeStates{
+  String? error;
+
+  HomeGetAllUserErrorState(this.error);
+}
+
+class SendMessageSuccessState extends HomeStates{}
+class SendMessageErrorState extends HomeStates{}
+class GetMessageSuccessState extends HomeStates{}
+class GetMessageErrorState extends HomeStates{}
+
 class HomeGetPostsSuccessState extends HomeStates{}
 class HomeGetPostsLoadingState extends HomeStates{}
 class HomeGetPostsErrorState extends HomeStates{
@@ -57,3 +70,11 @@ class RemovePostImageState extends HomeStates{}
 class PostImageUploadSuccessState extends HomeStates{}
 
 class PostImageUploadErrorState extends HomeStates{}
+
+class MessageImagePickedSuccessState extends HomeStates{}
+class MessageImagePickedErrorState extends HomeStates{}
+
+class MessageImageUploadSuccessState extends HomeStates{}
+class MessageImageUploadLoadingState extends HomeStates{}
+
+class MessageImageUploadErrorState extends HomeStates{}

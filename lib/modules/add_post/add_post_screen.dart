@@ -12,10 +12,14 @@ class AddPostScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     TextEditingController postTextController = TextEditingController();
+    HomeCubit homeCubit = HomeCubit.get(context);
     return BlocConsumer<HomeCubit,HomeStates>(
-      listener: (context,state){},
+      listener: (context,state){
+        if(state is CreatePostSuccessState){
+          Navigator.pop(context);
+        }
+      },
       builder: (context ,state){
-        HomeCubit homeCubit = HomeCubit.get(context);
         return Scaffold(
           appBar: AppBar(
             title: const Text('Create Post'),

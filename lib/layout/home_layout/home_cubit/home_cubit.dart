@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:social_app/layout/home_layout/home_cubit/home_states.dart';
+import 'package:social_app/models/message_model.dart';
 import 'package:social_app/models/post_model.dart';
 import 'package:social_app/models/user_data_model.dart';
 import 'package:social_app/modules/chats/chats_screen.dart';
@@ -54,6 +55,9 @@ class HomeCubit extends Cubit<HomeStates> {
   ];
 
   void changeBottomNav(int index){
+    if(index == 1){
+      getUsers();
+    }
     currentIndex = index;
     emit(HomeChangeBottomNavState());
   }
@@ -221,17 +225,21 @@ class HomeCubit extends Cubit<HomeStates> {
 
   List<PostModel> posts =[];
   List<String> postsId =[];
-  List<int> likes =[];
+  List<int> likes= [];
 
   void getPosts(){
     FirebaseFirestore.instance.collection('posts').get().then((value){
 
       value.docs.forEach((element) {
         element.reference.collection('likes').get().then((value){
-          likes.add(value.docs.length);
           postsId.add(element.id);
           posts.add(PostModel.fromJson(element.data()));
-        }).catchError((error){});
+          likes.add(value.docs.length);
+        }).catchError((error){
+          print(error.toString());
+        });
+
+
       });
 
       emit(HomeGetPostsSuccessState());
@@ -251,5 +259,124 @@ class HomeCubit extends Cubit<HomeStates> {
     });
   }
 
+  List<UserDataModel> users =[];
 
+  void getUsers(){
+    emit(HomeGetAllUserLoadingState());
+    if(users.isEmpty) {
+      FirebaseFirestore.instance.collection('users').get().then((value){
+      value.docs.forEach((element) {
+        if(element.data()['uid'] != userDataModel!.uid) {
+          users.add(UserDataModel.fromJson(element.data()));
+        }
+        emit(HomeGetAllUserSuccessState());
+      });
+    }).catchError((error){
+      emit(HomeGetAllUserErrorState(error.toString()));
+    });
+    }
+  }
+
+  void sendMessage({
+  required String receiverId,
+  required String dateTime,
+  String? message,
+  String? messageImage,
+}){
+    MessageModel messageModel = MessageModel(
+      receiverId: receiverId,
+      senderId: userDataModel!.uid,
+      message: message,
+      messageImage: messageImage,
+      dateTime: dateTime
+    );
+    //send sender chat
+    FirebaseFirestore
+        .instance
+        .collection('users')
+        .doc(userDataModel!.uid)
+        .collection('chats')
+        .doc(receiverId)
+        .collection('messages')
+        .add(messageModel.toMap())
+        .then((value){
+          emit(SendMessageSuccessState());
+    }).catchError((error){
+      print(error.toString());
+      emit(SendMessageErrorState());
+    });
+
+    //set receiver chat
+    FirebaseFirestore
+        .instance
+        .collection('users')
+        .doc(receiverId)
+        .collection('chats')
+        .doc(userDataModel!.uid)
+        .collection('messages')
+        .add(messageModel.toMap())
+        .then((value){
+      emit(SendMessageSuccessState());
+    }).catchError((error){
+      print(error.toString());
+      emit(SendMessageErrorState());
+    });
+  }
+
+  List<MessageModel> messages = [] ;
+  void getMessages({required String receiverId}){
+    FirebaseFirestore.instance
+        .collection('users')
+        .doc(userDataModel!.uid)
+        .collection('chats')
+        .doc(receiverId)
+        .collection('messages')
+        .orderBy('dateTime')
+        .snapshots()
+        .listen((event) {
+          messages =[];
+          event.docs.forEach((element) {
+            messages.add(MessageModel.fromJson(element.data()));
+          });
+          emit(GetMessageSuccessState());
+    });
+  }
+
+  File? messageImage;
+  Future sendMessageImage({required receiverId,required dateTime})async{
+    emit(MessageImageUploadLoadingState());
+    await imagePicker.pickImage(source: ImageSource.gallery).then((value){
+      messageImage = File(value!.path);
+      if(messageImage != null) {
+        uploadMessageImage(dateTime: dateTime, receiverId: receiverId);
+      }
+      emit(MessageImagePickedSuccessState());
+    }).catchError((error){
+      emit(MessageImagePickedErrorState());
+      print(error);
+    });
+  }
+  String? messageImageUrl;
+  void uploadMessageImage({
+    required String dateTime,
+    required String receiverId,
+  }){
+    emit(MessageImageUploadLoadingState());
+
+    FirebaseStorage.instance.
+    ref().child('MessagesImage${Uri.file(messageImage!.path).pathSegments.last}')
+        .putFile(messageImage!).then((value){
+      value.ref.getDownloadURL().then((value){
+        messageImageUrl = value;
+        sendMessage(receiverId: receiverId, dateTime: dateTime,messageImage: messageImageUrl);
+        emit(MessageImageUploadSuccessState());
+      }).catchError((error){
+        emit(MessageImageUploadErrorState());
+        print('1${error.toString()}');
+      });
+    }).catchError((error){
+      emit(MessageImageUploadErrorState());
+      print('2${error.toString()}');
+    });
+  }
 }
